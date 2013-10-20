@@ -9,6 +9,7 @@ class Doit {
         int sum;
         int i;
         
+        inte] x;
         i = 0;
         sum = 0;
         while (i<n)
