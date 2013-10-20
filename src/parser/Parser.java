@@ -30,12 +30,6 @@ public class Parser {
 		}
 	}
 
-	private void error() {
-		System.out.println("Syntax error: compilation aborting...\n");
-		System.exit(1);
-		return;
-	}
-
 	private void error(String errMsg) {
 		System.out.println("Syntax error (at line " + current.lineNum
 				+ " column " + current.columNum + " ): " + errMsg);
@@ -122,9 +116,9 @@ public class Parser {
 	// -> AtomExp [exp]
 	// -> AtomExp .length
 	private void parseNotExp() {
-		
+
 		parseAtomExp();
-		
+
 		while (current.kind == Kind.TOKEN_DOT
 				|| current.kind == Kind.TOKEN_LBRACK) {
 			if (current.kind == Kind.TOKEN_DOT) {
@@ -464,12 +458,11 @@ public class Parser {
 		eatToken(Kind.TOKEN_RBRACE);
 	}
 
-  public ast.program.T parse()
-  {
-    parseProgram();
-    return null;
-  }
-  
+	public ast.program.T parse() {
+		parseProgram();
+		return null;
+	}
+
 	// Program -> MainClass ClassDecl*
 	private void parseProgram() {
 		parseMainClass();
