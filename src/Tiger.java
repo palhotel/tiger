@@ -23,12 +23,10 @@ public class Tiger {
 		// /////////////////////////////////////////////////////
 		// to test the pretty printer on the "test/Fac.java" program
 		if (control.Control.testFac) {
-			System.out
-					.println("Testing the Tiger compiler on Fac.java starting:");
+			System.out.println("Testing the Tiger compiler on Fac.java starting:");
 			ast.PrettyPrintVisitor pp = new ast.PrettyPrintVisitor();
-			ast.Fac.prog.accept(pp);
-			System.out
-					.println("Testing the Tiger compiler on Fac.java finished.");
+			ast.Fac.prog2.accept(pp);
+			System.out.println("Testing the Tiger compiler on Fac.java finished.");
 			System.exit(1);
 		}
 
