@@ -10,6 +10,13 @@ public class Add extends T
     this.left = left;
     this.right = right;
   }
+  
+  public Add(T left, T right, int lineNum)
+  {
+    this.left = left;
+    this.right = right;
+    this.lineNum = lineNum;
+  }
 
   @Override
   public void accept(ast.Visitor v)

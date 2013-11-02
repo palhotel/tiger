@@ -4,9 +4,10 @@ public class NewObject extends T
 {
   public String id;
 
-  public NewObject(String id)
+  public NewObject(String id, int lineNum)
   {
     this.id = id;
+    this.lineNum = lineNum;
   }
 
   @Override
