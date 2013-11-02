@@ -4,9 +4,10 @@ public class Not extends T
 {
   public T exp;
 
-  public Not(T exp)
+  public Not(T exp, int lineNum)
   {
     this.exp = exp;
+    this.lineNum = lineNum;
   }
 
   @Override

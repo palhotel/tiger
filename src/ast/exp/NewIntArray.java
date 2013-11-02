@@ -4,9 +4,10 @@ public class NewIntArray extends T
 {
   public T exp;
 
-  public NewIntArray(T exp)
+  public NewIntArray(T exp, int lineNum)
   {
     this.exp = exp;
+    this.lineNum = lineNum;
   }
 
   @Override

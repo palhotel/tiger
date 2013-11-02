@@ -4,9 +4,10 @@ public class Num extends T
 {
   public int num;
 
-  public Num(int num)
+  public Num(int num, int lineNum)
   {
     this.num = num;
+    this.lineNum = lineNum;
   }
 
   @Override

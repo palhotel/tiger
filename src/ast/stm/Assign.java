@@ -6,11 +6,12 @@ public class Assign extends T
   public ast.exp.T exp;
   public ast.type.T type; // type of the id
 
-  public Assign(String id, ast.exp.T exp)
+  public Assign(String id, ast.exp.T exp, int lineNum)
   {
     this.id = id;
     this.exp = exp;
     this.type = null;
+    this.lineNum = lineNum;
   }
 
   @Override

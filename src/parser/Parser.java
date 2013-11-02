@@ -78,20 +78,20 @@ public class Parser {
 		case TOKEN_NUM:
 			int num = Integer.parseInt(current.lexeme);
 			advance();
-			return new ast.exp.Num(num);
+			return new ast.exp.Num(num, current.lineNum);
 		case TOKEN_TRUE:
 			advance();
-			return new ast.exp.True();
+			return new ast.exp.True(current.lineNum);
 		case TOKEN_FALSE:
 			advance();
-			return new ast.exp.False();
+			return new ast.exp.False(current.lineNum);
 		case TOKEN_THIS:
 			advance();
-			return new ast.exp.This();
+			return new ast.exp.This(current.lineNum);
 		case TOKEN_ID:
 			id = current.lexeme;
 			advance();
-			return new ast.exp.Id(id);
+			return new ast.exp.Id(id, current.lineNum);
 		case TOKEN_NEW: {
 			advance();
 			switch (current.kind) {
@@ -100,13 +100,13 @@ public class Parser {
 				eatToken(Kind.TOKEN_LBRACK);
 				exp = parseExp();
 				eatToken(Kind.TOKEN_RBRACK);
-				return new ast.exp.NewIntArray(exp);
+				return new ast.exp.NewIntArray(exp, current.lineNum);
 			case TOKEN_ID:
 				id = current.lexeme;
 				advance();
 				eatToken(Kind.TOKEN_LPAREN);
 				eatToken(Kind.TOKEN_RPAREN);
-				return new ast.exp.NewObject(id);
+				return new ast.exp.NewObject(id, current.lineNum);
 			default:
 				error("after keyword \"new\" should be followed by \"int\" or object name.");
 				return null;
@@ -130,19 +130,19 @@ public class Parser {
 				advance();
 				if (current.kind == Kind.TOKEN_LENGTH) {
 					advance();
-					return new ast.exp.Length(array);
+					return new ast.exp.Length(array, current.lineNum);
 				}
 				String id = current.lexeme;
 				eatToken(Kind.TOKEN_ID);
 				eatToken(Kind.TOKEN_LPAREN);
 				java.util.LinkedList<ast.exp.T> exps = parseExpList();
 				eatToken(Kind.TOKEN_RPAREN);
-				return new ast.exp.Call(array, id, exps);
+				return new ast.exp.Call(array, id, exps, current.lineNum);
 			} else {
 				advance();
 				ast.exp.T index = parseExp();
 				eatToken(Kind.TOKEN_RBRACK);
-				return new ast.exp.ArraySelect(array, index);
+				return new ast.exp.ArraySelect(array, index, current.lineNum);
 			}
 		}
 		return array;
@@ -159,7 +159,7 @@ public class Parser {
 		ast.exp.T exp = parseNotExp();
 
 		for (int i = 0; i < count; i++)
-			exp = new ast.exp.Not(exp);
+			exp = new ast.exp.Not(exp, current.lineNum);
 		return exp;
 	}
 
@@ -170,7 +170,7 @@ public class Parser {
 		while (current.kind == Kind.TOKEN_TIMES) {
 			advance();
 			ast.exp.T right = parseTimesExp();
-			left = new ast.exp.Times(left, right);
+			left = new ast.exp.Times(left, right, current.lineNum);
 		}
 		return left;
 	}
@@ -185,9 +185,9 @@ public class Parser {
 			advance();
 			ast.exp.T right = parseAddSubExp();
 			if (kind == Kind.TOKEN_ADD)
-				left = new ast.exp.Add(left, right);
+				left = new ast.exp.Add(left, right, current.lineNum);
 			else
-				left = new ast.exp.Sub(left, right);
+				left = new ast.exp.Sub(left, right, current.lineNum);
 		}
 		return left;
 	}
@@ -199,7 +199,7 @@ public class Parser {
 		while (current.kind == Kind.TOKEN_LT) {
 			advance();
 			ast.exp.T right = parseLtExp();
-			left = new ast.exp.Lt(left, right);
+			left = new ast.exp.Lt(left, right, current.lineNum);
 		}
 		return left;
 	}
@@ -211,7 +211,7 @@ public class Parser {
 		while (current.kind == Kind.TOKEN_AND) {
 			advance();
 			ast.exp.T right = parseAndExp();
-			left = new ast.exp.And(left, right);
+			left = new ast.exp.And(left, right, current.lineNum);
 		}
 		return left;
 	}
@@ -227,6 +227,7 @@ public class Parser {
 		// to parse a statement.
 		String id;
 		ast.exp.T exp;
+		int lineNum = current.lineNum;
 		if (temp != null) {
 			id = temp.lexeme;
 			temp = null;
@@ -235,7 +236,7 @@ public class Parser {
 				advance();
 				exp = parseExp();
 				eatToken(Kind.TOKEN_SEMI);
-				return new ast.stm.Assign(id, exp);
+				return new ast.stm.Assign(id, exp, lineNum);
 			case TOKEN_LBRACK:
 				id = current.lexeme;
 				advance();
@@ -244,7 +245,7 @@ public class Parser {
 				eatToken(Kind.TOKEN_ASSIGN);
 				exp = parseExp();
 				eatToken(Kind.TOKEN_SEMI);
-				return new ast.stm.AssignArray(id, index, exp);
+				return new ast.stm.AssignArray(id, index, exp, lineNum);
 			default:
 				error("expression error. illegal character \"" + current.lexeme
 						+ "\" after " + id + ".");
@@ -282,7 +283,7 @@ public class Parser {
 			}
 			else
 			    elsee = new ast.stm.Block(new util.Flist<ast.stm.T>().addAll(parseStatement()));
-			return new ast.stm.If(condition, thenn, elsee);
+			return new ast.stm.If(condition, thenn, elsee, lineNum);
 		case TOKEN_WHILE:
 			advance();
 			eatToken(Kind.TOKEN_LPAREN);
@@ -298,7 +299,7 @@ public class Parser {
 				stms.add(parseStatement());
 				body = new ast.stm.Block(stms);
 			}
-			return new ast.stm.While(condition, body);
+			return new ast.stm.While(condition, body, lineNum);
 		case TOKEN_SYSTEM:
 			advance();
 			eatToken(Kind.TOKEN_DOT);
@@ -309,7 +310,7 @@ public class Parser {
 			exp = parseExp();
 			eatToken(Kind.TOKEN_RPAREN);
 			eatToken(Kind.TOKEN_SEMI);
-			return new ast.stm.Print(exp);
+			return new ast.stm.Print(exp, lineNum);
 		case TOKEN_ID:
 			String tempID = current.lexeme;
 			advance();
@@ -318,7 +319,7 @@ public class Parser {
 				advance();
 				exp = parseExp();
 				eatToken(Kind.TOKEN_SEMI);
-				return new ast.stm.Assign(tempID, exp);
+				return new ast.stm.Assign(tempID, exp, lineNum);
 			case TOKEN_LBRACK:
 				advance();
 				ast.exp.T index = parseExp();
@@ -326,7 +327,7 @@ public class Parser {
 				eatToken(Kind.TOKEN_ASSIGN);
 				exp = parseExp();
 				eatToken(Kind.TOKEN_SEMI);
-				return new ast.stm.AssignArray(tempID, index, exp);
+				return new ast.stm.AssignArray(tempID, index, exp, lineNum);
 			default:
 				error("expression error. illegal character \"" + current.lexeme
 						+ "\" after " + tempID + ".");
@@ -396,7 +397,7 @@ public class Parser {
 		// a fresh one.
 		ast.type.T type = null;
 		String id = null;
-
+		int lineNum = current.lineNum;
 		if (current.kind == Kind.TOKEN_ID) {
 			temp = current;
 			advance();
@@ -406,7 +407,7 @@ public class Parser {
 				id = current.lexeme;
 				advance();
 				eatToken(Kind.TOKEN_SEMI);
-				return new ast.dec.Dec(type, id);
+				return new ast.dec.Dec(type, id, lineNum);
 			}
 			return null;
 		} else {
@@ -414,7 +415,7 @@ public class Parser {
 			id = current.lexeme;
 			eatToken(Kind.TOKEN_ID);
 			eatToken(Kind.TOKEN_SEMI);
-			return new ast.dec.Dec(type, id);
+			return new ast.dec.Dec(type, id, lineNum);
 		}
 	}
 
@@ -443,16 +444,16 @@ public class Parser {
 		if (current.kind == Kind.TOKEN_INT
 				|| current.kind == Kind.TOKEN_BOOLEAN
 				|| current.kind == Kind.TOKEN_ID) {
-
 			type = parseType();
 			id = current.lexeme;
-			formalList.add(new ast.dec.Dec(type, id));
+			int lineNum = current.lineNum;
+			formalList.add(new ast.dec.Dec(type, id, lineNum));
 			eatToken(Kind.TOKEN_ID);
 			while (current.kind == Kind.TOKEN_COMMER) {
 				advance();
 				type = parseType();
 				id = current.lexeme;
-				formalList.add(new ast.dec.Dec(type, id));
+				formalList.add(new ast.dec.Dec(type, id, lineNum));
 				eatToken(Kind.TOKEN_ID);
 			}
 		}
@@ -501,8 +502,8 @@ public class Parser {
 		id = current.lexeme;
 		eatToken(Kind.TOKEN_ID);
 		if (current.kind == Kind.TOKEN_EXTENDS) {
-			extendss = current.lexeme;
 			eatToken(Kind.TOKEN_EXTENDS);
+			extendss = current.lexeme;
 			eatToken(Kind.TOKEN_ID);
 		}
 		eatToken(Kind.TOKEN_LBRACE);

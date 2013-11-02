@@ -4,11 +4,12 @@ public class And extends T
 {
   public T left;
   public T right;
-
-  public And(T left, T right)
+  
+  public And(T left, T right, int lineNum)
   {
     this.left = left;
     this.right = right;
+    this.lineNum = lineNum;
   }
 
   @Override
