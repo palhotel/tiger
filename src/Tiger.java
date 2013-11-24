@@ -7,7 +7,6 @@ import lexer.Token;
 import lexer.Token.Kind;
 import control.CommandLine;
 import control.Control;
-import control.Control.Codegen_Kind_t;
 import parser.Parser;
 
 public class Tiger {
