@@ -16,6 +16,7 @@ public class TranslateVisitor implements ast.Visitor
   private java.util.LinkedList<codegen.C.vtable.T> vtables;
   private java.util.LinkedList<codegen.C.method.T> methods;
   private codegen.C.mainMethod.T mainMethod;
+  private java.util.LinkedList<codegen.C.dec.T> fieldVars;
   public codegen.C.program.T program;
 
   public TranslateVisitor()
@@ -32,6 +33,7 @@ public class TranslateVisitor implements ast.Visitor
     this.methods = new java.util.LinkedList<codegen.C.method.T>();
     this.mainMethod = null;
     this.program = null;
+    this.fieldVars=null;
   }
 
   // //////////////////////////////////////////////////////
@@ -46,16 +48,31 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.exp.Add e)
   {
+	  e.left.accept(this);
+	  codegen.C.exp.T left = this.exp;
+	  e.right.accept(this);
+	  this.exp = new codegen.C.exp.Add(left, this.exp);
+	  return;
   }
 
   @Override
   public void visit(ast.exp.And e)
   {
+	  e.left.accept(this);
+	  codegen.C.exp.T left = this.exp;
+	  e.right.accept(this);
+	  this.exp = new codegen.C.exp.And(left, this.exp);
+	  return;
   }
 
   @Override
   public void visit(ast.exp.ArraySelect e)
   {
+	  e.array.accept(this);
+	  codegen.C.exp.T array = this.exp;
+	  e.index.accept(this);
+	  this.exp = new codegen.C.exp.ArraySelect(array, this.exp);
+	  return;
   }
 
   @Override
@@ -67,10 +84,14 @@ public class TranslateVisitor implements ast.Visitor
         newid));
     codegen.C.exp.T exp = this.exp;
     java.util.LinkedList<codegen.C.exp.T> args = new java.util.LinkedList<codegen.C.exp.T>();
-    for (ast.exp.T x : e.args) {
-      x.accept(this);
-      args.add(this.exp);
+    if(e.args!=null&&(!e.args.isEmpty()))
+    {
+    	for (ast.exp.T x : e.args) {
+    	      x.accept(this);
+    	      args.add(this.exp);
+    	    }
     }
+    
     this.exp = new codegen.C.exp.Call(newid, exp, e.id, args);
     return;
   }
@@ -78,18 +99,33 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.exp.False e)
   {
+	  this.exp = new codegen.C.exp.Num(0);
+	  return;
   }
 
   @Override
   public void visit(ast.exp.Id e)
   {
-    this.exp = new codegen.C.exp.Id(e.id);
+	codegen.C.exp.Id eee= new codegen.C.exp.Id(e.id);
+	for(codegen.C.dec.T decc:this.fieldVars)
+	{
+		if(decc==null)continue;
+		if(((codegen.C.dec.Dec)decc).id.equals(e.id))
+		{
+			eee.isField=true;
+			break;
+		}
+	}
+    this.exp =eee;
     return;
   }
 
   @Override
   public void visit(ast.exp.Length e)
   {
+	  e.array.accept(this);
+	  this.exp = new codegen.C.exp.Length(this.exp);
+	  return;
   }
 
   @Override
@@ -106,6 +142,9 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.exp.NewIntArray e)
   {
+	  e.exp.accept(this);
+	  this.exp = new codegen.C.exp.NewIntArray(this.exp);
+	  return;
   }
 
   @Override
@@ -118,6 +157,9 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.exp.Not e)
   {
+	  e.exp.accept(this);
+	  this.exp = new codegen.C.exp.Not(this.exp);
+	  return;
   }
 
   @Override
@@ -159,6 +201,8 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.exp.True e)
   {
+	  this.exp = new codegen.C.exp.Num(1);
+	  return;
   }
 
   // statements
@@ -166,18 +210,50 @@ public class TranslateVisitor implements ast.Visitor
   public void visit(ast.stm.Assign s)
   {
     s.exp.accept(this);
-    this.stm = new codegen.C.stm.Assign(s.id, this.exp);
+    codegen.C.stm.Assign stmm=new codegen.C.stm.Assign(s.id, this.exp);
+	for(codegen.C.dec.T decc:this.fieldVars)
+	{
+		if(decc==null)continue;
+		if(((codegen.C.dec.Dec)decc).id.equals(s.id))
+		{
+			stmm.isField=true;
+			break;
+		}
+	}
+    this.stm = stmm;
     return;
   }
 
   @Override
   public void visit(ast.stm.AssignArray s)
   {
+	  s.index.accept(this);
+	  codegen.C.exp.T index = this.exp;
+	  s.exp.accept(this);
+	  codegen.C.stm.AssignArray stmm= new codegen.C.stm.AssignArray(s.id, index, this.exp);
+	  for(codegen.C.dec.T decc:this.fieldVars)
+		{
+		  if(decc==null)continue;
+		  if(((codegen.C.dec.Dec)decc).id.equals(s.id))
+		  {
+			stmm.isField=true;
+			break;
+		  }
+		}
+	  this.stm =stmm;
+	  return;
   }
 
   @Override
   public void visit(ast.stm.Block s)
   {
+	  java.util.LinkedList<codegen.C.stm.T> newStm = new java.util.LinkedList<codegen.C.stm.T>();
+	    for (ast.stm.T t : s.stms) {
+	      t.accept(this);
+	      newStm.add(this.stm);
+	    }
+	    this.stm = new codegen.C.stm.Block(newStm);
+	    return;
   }
 
   @Override
@@ -204,17 +280,25 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.stm.While s)
   {
+	  s.condition.accept(this);
+	  codegen.C.exp.T condition = this.exp;
+	  s.body.accept(this);
+	  codegen.C.stm.T body = this.stm;
+	  this.stm = new codegen.C.stm.While(condition, body);
+	  return;
   }
 
   // type
   @Override
   public void visit(ast.type.Boolean t)
   {
+	  this.type = new codegen.C.type.Int();
   }
 
   @Override
   public void visit(ast.type.Class t)
   {
+	  this.type = new codegen.C.type.Class(t.id);
   }
 
   @Override
@@ -226,6 +310,7 @@ public class TranslateVisitor implements ast.Visitor
   @Override
   public void visit(ast.type.IntArray t)
   {
+	  this.type = new codegen.C.type.IntArray();
   }
 
   // dec
@@ -316,6 +401,8 @@ public class TranslateVisitor implements ast.Visitor
 
   public void scanClasses(java.util.LinkedList<ast.classs.T> cs)
   {
+	 //field linkedlist
+	  this.fieldVars=new java.util.LinkedList<codegen.C.dec.T>();
     // put empty chuncks into the table
     for (ast.classs.T c : cs) {
       ast.classs.Class cc = (ast.classs.Class) c;
@@ -328,6 +415,7 @@ public class TranslateVisitor implements ast.Visitor
       java.util.LinkedList<codegen.C.dec.T> newDecs = new java.util.LinkedList<codegen.C.dec.T>();
       for (ast.dec.T dec : cc.decs) {
         dec.accept(this);
+    	this.fieldVars.add(this.dec);
         newDecs.add(this.dec);
       }
       this.table.initDecs(cc.id, newDecs);

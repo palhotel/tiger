@@ -6,37 +6,68 @@ public class ClassTable {
 
 	public ClassTable() {
 		this.table = new java.util.Hashtable<String, ClassBinding>();
+		this.unused = new java.util.Hashtable<String, ClassBinding>();
 	}
 
 	// Duplication is not allowed
-	@SuppressWarnings("unchecked")
 	public void put(String c, ClassBinding cb) {
 		if (this.table.get(c) != null) {
 			System.out.println("duplicated class: " + c);
 			System.exit(1);
 		}
-		this.table.put(c, cb); 
-		unused = (java.util.Hashtable<String, ClassBinding>)table.clone();
+		this.table.put(c, cb);
+		
+		if(unused != null)
+			unused.clear();
+		for(String str : table.keySet())
+		{
+			ClassBinding uncb = new ClassBinding(table.get(str).extendss);
+			for(String  d: table.get(str).fields.keySet())
+			{
+				uncb.fields.put(d, table.get(str).fields.get(d));
+			}
+			unused.put(str, uncb);
+		}
 	}
 
 	// put a field into this table
 	// Duplication is not allowed
-	@SuppressWarnings("unchecked")
 	public void put(String c, String id, ast.type.T type) {
 		ClassBinding cb = this.table.get(c);
 		cb.put(id, type);
-		unused = (java.util.Hashtable<String, ClassBinding>)table.clone();
+		
+		if(unused != null)
+			unused.clear();
+		for(String str : table.keySet())
+		{
+			ClassBinding uncb = new ClassBinding(table.get(str).extendss);
+			for(String  d: table.get(str).fields.keySet())
+			{
+				uncb.fields.put(d, table.get(str).fields.get(d));
+			}
+			unused.put(str, uncb);
+		}
 		return;
 	}
 
 	// put a method into this table
 	// Duplication is not allowed.
 	// Also note that MiniJava does NOT allow overloading.
-	@SuppressWarnings("unchecked")
 	public void put(String c, String id, MethodType type) {
 		ClassBinding cb = this.table.get(c);
 		cb.put(id, type);
-		unused = (java.util.Hashtable<String, ClassBinding>)table.clone();
+
+		if(unused != null)
+			unused.clear();
+		for(String str : table.keySet())
+		{
+			ClassBinding uncb = new ClassBinding(table.get(str).extendss);
+			for(String  d: table.get(str).fields.keySet())
+			{
+				uncb.fields.put(d, table.get(str).fields.get(d));
+			}
+			unused.put(str, uncb);
+		}
 		return;
 	}
 
@@ -67,10 +98,11 @@ public class ClassTable {
 	
 	public void printUnused()
 	{
+		
 		for(String cls : unused.keySet())
 		{
 			for(String f : unused.get(cls).fields.keySet())
-				System.out.println("warning: in class " + cls +" identify " + f + "has not been used.");
+				System.out.println("warning: in class " + cls +" identify " + f + " has not been used.");
 		}
 	}
 

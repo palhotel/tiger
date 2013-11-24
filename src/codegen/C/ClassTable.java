@@ -31,6 +31,7 @@ public class ClassTable
   {
     ClassBinding cb = this.table.get(current);
     cb.putm(current, ret, args, mid);
+    this.table.put(current, cb);
     return;
   }
 

@@ -24,7 +24,7 @@ public class Fac {
 
 	// // class "Fac"
 	static ast.classs.Class fac = new ast.classs.Class(
-			"F",
+			"Fac",
 			null,
 			new util.Flist<ast.dec.T>().addAll(),
 			new util.Flist<ast.method.T>().addAll(new ast.method.Method(

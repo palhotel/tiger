@@ -9,13 +9,21 @@ public interface Visitor
 
   public void visit(Areturn s);
 
+  public void visit(ArrayLength s);
+  
   public void visit(Astore s);
 
   public void visit(Goto s);
+  
+  public void visit(Iadd s);
+  
+  public void visit(Iand s);
 
   public void visit(Ificmplt s);
 
   public void visit(Ifne s);
+  
+  public void visit(Iaload s);
 
   public void visit(Iload s);
 
@@ -23,11 +31,17 @@ public interface Visitor
 
   public void visit(Ireturn s);
 
+  public void visit(Iastore s);
+  
   public void visit(Istore s);
 
   public void visit(Isub s);
+  
+  public void visit(Ixor s);
 
   public void visit(Invokevirtual s);
+  
+  public void visit(NewArray s);
 
   public void visit(Label s);
 
@@ -37,6 +51,10 @@ public interface Visitor
 
   public void visit(New s);
 
+  public void visit(GetField s);
+  
+  public void visit(PutField s);
+  
   // type
   public void visit(codegen.bytecode.type.Class t);
 

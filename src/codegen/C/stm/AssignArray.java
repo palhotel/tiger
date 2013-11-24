@@ -7,6 +7,7 @@ public class AssignArray extends T
   public String id;
   public codegen.C.exp.T index;
   public codegen.C.exp.T exp;
+  public boolean isField=false;
 
   public AssignArray(String id, codegen.C.exp.T index, codegen.C.exp.T exp)
   {

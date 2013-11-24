@@ -6,6 +6,7 @@ public class Assign extends T
 {
   public String id;
   public codegen.C.exp.T exp;
+  public boolean isField=false;
 
   public Assign(String id, codegen.C.exp.T exp)
   {
