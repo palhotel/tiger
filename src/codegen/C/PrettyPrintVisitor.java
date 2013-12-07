@@ -5,6 +5,7 @@ import control.Control;
 public class PrettyPrintVisitor implements Visitor {
 	private int indentLevel;
 	private java.io.BufferedWriter writer;
+	java.util.Hashtable<String, String> fieldsBitVector = new java.util.Hashtable<String, String>();
 
 	public PrettyPrintVisitor() {
 		this.indentLevel = 2;
@@ -66,16 +67,16 @@ public class PrettyPrintVisitor implements Visitor {
 		e.array.accept(this);
 		this.say(" [");
 		e.index.accept(this);
-		this.say("]");
+		this.say("+4]");
 		return;
 	}
 
 	@Override
 	public void visit(codegen.C.exp.Call e) {
-		this.say("(" + e.assign + "=");
+		this.say("(frame." + e.assign + "=");
 		e.exp.accept(this);
 		this.say(", ");
-		this.say(e.assign + "->vptr->" + e.id + "(" + e.assign);
+		this.say("frame." + e.assign + "->vptr->" + e.id + "(frame." + e.assign);
 		int size = e.args.size();
 		if (size == 0) {
 			this.say("))");
@@ -91,16 +92,27 @@ public class PrettyPrintVisitor implements Visitor {
 
 	@Override
 	public void visit(codegen.C.exp.Id e) {
-		if(e.isField==true)
-			this.say("this->"+e.id);
-		else this.say(e.id);
+		if (e.isInt) {
+			if (e.isField == true)
+				this.say("this->" + e.id);
+			else
+				this.say(e.id);
+		} else {
+			if (e.isField == true)
+				this.say("this->" + e.id);
+			else
+				this.say("frame." + e.id);
+			/*
+			 * this.say("this->frame." + e.id); else this.say("frame." + e.id);
+			 */
+		}
 	}
 
 	// weiwancheng
 	@Override
 	public void visit(codegen.C.exp.Length e) {
 		e.array.accept(this);
-		say("[-1]");
+		say("[2]");
 	}
 
 	@Override
@@ -113,11 +125,13 @@ public class PrettyPrintVisitor implements Visitor {
 
 	@Override
 	public void visit(codegen.C.exp.NewIntArray e) {
-		this.say("System_malloc(");
+		this.say("(int*)Tiger_new_array(");
 		e.exp.accept(this);
 		this.say(")");
 	}
 
+	// /////////////////////////////////////////////////////////////////////////excise
+	// 7
 	@Override
 	public void visit(codegen.C.exp.NewObject e) {
 		this.say("((struct " + e.id + "*)(Tiger_new (&" + e.id
@@ -164,9 +178,13 @@ public class PrettyPrintVisitor implements Visitor {
 	@Override
 	public void visit(codegen.C.stm.Assign s) {
 		this.printSpaces();
-		if(s.isField==true)
-			this.say("this->"+s.id+" = ");
-		else this.say(s.id + " = ");
+		if (s.isField == true)
+			this.say("this->" + s.id + " = ");
+		else if (s.isInt) {
+			this.say(s.id + " = ");
+		} else {
+			this.say("frame." + s.id + " = ");
+		}
 		s.exp.accept(this);
 		this.sayln(";");
 		return;
@@ -175,11 +193,12 @@ public class PrettyPrintVisitor implements Visitor {
 	@Override
 	public void visit(codegen.C.stm.AssignArray s) {
 		this.printSpaces();
-		if(s.isField==true)
-			this.say("this->"+s.id+"[");
-		else this.say(s.id + "[");
+		if (s.isField == true)
+			this.say("this->" + s.id + "[");
+		else
+			this.say("frame." + s.id + "[");
 		s.index.accept(this);
-		this.say("] = ");
+		this.say("+4] = ");
 		s.exp.accept(this);
 		this.sayln(";");
 		return;
@@ -259,6 +278,50 @@ public class PrettyPrintVisitor implements Visitor {
 	// method
 	@Override
 	public void visit(codegen.C.method.Method m) {
+
+		String arguments_gc_map = "";
+		int locals_gc_count = 0;
+
+		for (codegen.C.dec.T d : m.formals) {
+			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
+			if (dec.type.toString() == "@int") {
+				arguments_gc_map += "0";
+			} else {
+				arguments_gc_map += "1";
+			}
+		}
+
+		for (codegen.C.dec.T d : m.locals) {
+			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
+			if (dec.type.toString() != "@int") {
+				locals_gc_count++;
+			}
+		}
+
+		this.sayln("char* " + m.classId + "_" + m.id + "_arguments_gc_map = \""
+				+ arguments_gc_map + "\";");
+		this.sayln("int " + m.classId + "_" + m.id + "_locals_gc_count = "
+				+ locals_gc_count + ";");
+
+		this.sayln("struct " + m.classId + "_" + m.id + "_gc_frame{");
+		indent();
+		this.sayln("void *prev;");
+		this.sayln("char *arguments_gc_map;");
+		this.sayln("int *arguments_base_address;");
+		this.sayln("int locals_gc_count;");
+		for (codegen.C.dec.T d : m.locals) {
+			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
+			if (dec.type.toString() == "@int") {
+				// this.sayln("int "+dec.id);
+			} else if (dec.type.toString() == "@int[]") {
+				this.sayln("int *" + dec.id + ";");
+			} else {
+				this.sayln("struct " + dec.type + " *" + dec.id + ";");
+			}
+		}
+		unIndent();
+		this.sayln("};");
+
 		m.retType.accept(this);
 		this.say(" " + m.classId + "_" + m.id + "(");
 		int size = m.formals.size();
@@ -272,35 +335,113 @@ public class PrettyPrintVisitor implements Visitor {
 		}
 		this.sayln(")");
 		this.sayln("{");
+		indent();
+
+		this.sayln("struct " + m.classId + "_" + m.id + "_gc_frame frame;");
+		this.sayln("frame.prev = prev;");
+		this.sayln("prev = &frame;");
+		this.sayln("frame.arguments_gc_map = " + m.classId + "_" + m.id
+				+ "_arguments_gc_map;");
+		this.sayln("frame.arguments_base_address = (int*)&this;");
+		this.sayln("frame.locals_gc_count = " + m.classId + "_" + m.id
+				+ "_locals_gc_count;");
 
 		for (codegen.C.dec.T d : m.locals) {
 			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
-			this.say("  ");
-			dec.type.accept(this);
-			this.say(" " + dec.id + ";\n");
+			// dec.type.accept(this);
+			// this.sayln(" " + dec.id + ";");
+
+			if (dec.type.toString() == "@int") {
+				dec.type.accept(this);
+				this.sayln(" " + dec.id + ";");
+				// this.sayln("frame."+dec.id + " = "+dec.id+";");
+			} // else {
+				// this.sayln("frame."+dec.id + " = &"+dec.id+";");
+				// }
+
 		}
 		this.sayln("");
 		for (codegen.C.stm.T s : m.stms)
 			s.accept(this);
-		this.say("  return ");
+
+		m.retType.accept(this);
+		this.say(" returnResult = ");
 		m.retExp.accept(this);
 		this.sayln(";");
+
+		this.sayln("prev = frame.prev;");
+		// this.sayln("frame=0;");
+
+		this.sayln("return returnResult;");
+		// m.retExp.accept(this);
+		// this.sayln(";");
+		unIndent();
 		this.sayln("}");
 		return;
 	}
 
 	@Override
 	public void visit(codegen.C.mainMethod.MainMethod m) {
+		this.sayln("//Main's Frame");
+		this.sayln("struct " + "main_gc_frame{");
+		indent();
+		this.sayln("void *prev;");
+		this.sayln("char *arguments_gc_map;");
+		this.sayln("int *arguments_base_address;");
+		this.sayln("int locals_gc_count;");
+		for (codegen.C.dec.T d : m.locals) {
+			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
+			if (dec.type.toString() == "@int") {
+				// this.sayln("int "+dec.id);
+			} else if (dec.type.toString() == "@int[]") {
+				this.sayln("int *" + dec.id + ";");
+			} else {
+				this.sayln("struct " + dec.type + " *" + dec.id + ";");
+			}
+		}
+		unIndent();
+		this.sayln("};");
+		// Main method
 		this.sayln("int Tiger_main ()");
 		this.sayln("{");
-		for (codegen.C.dec.T dec : m.locals) {
-			this.say("  ");
-			codegen.C.dec.Dec d = (codegen.C.dec.Dec) dec;
-			d.type.accept(this);
-			this.say(" ");
-			this.sayln(d.id + ";");
+		//
+		indent();
+		this.sayln("struct " + "main_gc_frame frame;");
+		this.sayln("frame.prev = prev;");
+		this.sayln("prev = &frame;");
+		this.sayln("frame.arguments_gc_map = " + "0;");
+		this.sayln("frame.arguments_base_address = 0;");
+
+		int locals_gc_count = 0;
+		for (codegen.C.dec.T d : m.locals) {
+			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
+			if (dec.type.toString() != "@int") {
+				locals_gc_count++;
+			}
+		}
+		this.sayln("frame.locals_gc_count = " + locals_gc_count + ";");
+
+		for (codegen.C.dec.T d : m.locals) {
+			codegen.C.dec.Dec dec = (codegen.C.dec.Dec) d;
+			// dec.type.accept(this);
+			// this.sayln(" " + dec.id + ";");
+
+			if (dec.type.toString() == "@int") {
+				dec.type.accept(this);
+				this.sayln(" " + dec.id + ";");
+			}
+
 		}
 		m.stm.accept(this);
+
+		this.sayln("prev = frame.prev;");
+		unIndent();
+		//
+		/*
+		 * for (codegen.C.dec.T dec : m.locals) { this.say("  ");
+		 * codegen.C.dec.Dec d = (codegen.C.dec.Dec) dec; d.type.accept(this);
+		 * this.say(" "); this.sayln(d.id + ";"); } m.stm.accept(this);
+		 */
 		this.sayln("}\n");
 		return;
 	}
@@ -310,6 +451,7 @@ public class PrettyPrintVisitor implements Visitor {
 	public void visit(codegen.C.vtable.Vtable v) {
 		this.sayln("struct " + v.id + "_vtable");
 		this.sayln("{");
+		this.sayln("char* " + v.id + "_gc_map;");
 		for (codegen.C.Ftuple t : v.ms) {
 			this.say("  ");
 			t.ret.accept(this);
@@ -322,6 +464,7 @@ public class PrettyPrintVisitor implements Visitor {
 	private void outputVtable(codegen.C.vtable.Vtable v) {
 		this.sayln("struct " + v.id + "_vtable " + v.id + "_vtable_ = ");
 		this.sayln("{");
+		this.sayln("\"" + this.fieldsBitVector.get(v.id) + "\",");
 		for (codegen.C.Ftuple t : v.ms) {
 			this.say("  ");
 			this.sayln(t.classs + "_" + t.id + ",");
@@ -333,15 +476,26 @@ public class PrettyPrintVisitor implements Visitor {
 	// class
 	@Override
 	public void visit(codegen.C.classs.Class c) {
+		String str = "";
 		this.sayln("struct " + c.id);
 		this.sayln("{");
 		this.sayln("  struct " + c.id + "_vtable *vptr;");
+		//new obj-model,add 3 fields
+		this.sayln("  int mem_isobj;");
+		this.sayln("  int mem_size;");
+		this.sayln("  void* mem_forwarding;");
 		for (codegen.C.Tuple t : c.decs) {
 			this.say("  ");
 			t.type.accept(this);
+			if (t.type.toString().equals("@int"))
+				str += "0";
+			else {
+				str += "1";
+			}
 			this.say(" ");
 			this.sayln(t.id + ";");
 		}
+		this.fieldsBitVector.put(c.id, str);
 		this.sayln("};");
 		return;
 	}
@@ -369,6 +523,9 @@ public class PrettyPrintVisitor implements Visitor {
 
 		this.sayln("// This is automatically generated by the Tiger compiler.");
 		this.sayln("// Do NOT modify!\n");
+		// global
+		this.sayln("//Global vars");
+		this.sayln("extern void* prev;");
 
 		this.sayln("// structures");
 		for (codegen.C.classs.T c : p.classes) {
@@ -380,11 +537,10 @@ public class PrettyPrintVisitor implements Visitor {
 			v.accept(this);
 		}
 		this.sayln("");
-		
+
 		this.sayln("//only methods declaration");
-		for(codegen.C.method.T mm:p.methods)
-		{
-			codegen.C.method.Method m=(codegen.C.method.Method)mm;
+		for (codegen.C.method.T mm : p.methods) {
+			codegen.C.method.Method m = (codegen.C.method.Method) mm;
 			m.retType.accept(this);
 			this.say(" " + m.classId + "_" + m.id + "(");
 			int size = m.formals.size();
@@ -405,14 +561,12 @@ public class PrettyPrintVisitor implements Visitor {
 			outputVtable((codegen.C.vtable.Vtable) v);
 		}
 		this.sayln("");
-		
+
 		this.sayln("// methods");
 		for (codegen.C.method.T m : p.methods) {
 			m.accept(this);
 		}
 		this.sayln("");
-
-		
 
 		this.sayln("// main method");
 		p.mainMethod.accept(this);

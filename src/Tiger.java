@@ -117,9 +117,7 @@ public class Tiger {
 			codegen.C.PrettyPrintVisitor ppc = new codegen.C.PrettyPrintVisitor();
 			cAst.accept(ppc);
 			try{
-			Process pro = Runtime.getRuntime().exec("gcc -c " + fname + ".c");
-			pro.waitFor();
-			pro = Runtime.getRuntime().exec("gcc " + fname +".c runtime/runtime.c");
+			Process pro = Runtime.getRuntime().exec("gcc " + fname +".c runtime/runtime.c");
 			pro.waitFor();
 			}
 			catch(Exception e)
