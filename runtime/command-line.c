@@ -21,6 +21,13 @@ typedef enum{
 static void Arg_setHeapSize(int heapSize)
 {
   Control_heapSize = heapSize;
+  printf("# the heapSize now :%d.\n",heapSize);
+  return;
+}
+static void Arg_log()
+{
+  Enable_log=1;
+  printf("#Log:\n");
   return;
 }
 
@@ -48,6 +55,11 @@ static struct Arg_t allArgs[] = {
    "set the Java heap size (in kilobytes)",
    ARGTYPE_INT,
    Arg_setHeapSize},
+   {"gcLog", 
+   "[]", 
+   "output log",
+   ARGTYPE_EMPTY,
+   Arg_log},
   {0,
    0,
    0,
@@ -123,21 +135,24 @@ void CommandLine_doarg (int argc, char **argv)
     if (strcmp(argv[index++], "@tiger")==0)
       break;
   }
-  for (index=0; index<argc; ){
-    char *inputName = argv[index++];
+	
+  for (index; index<argc;index++ ){
+ 
+    char *inputName = argv[index];
     // If a string starts with '@', then
     // treat it as a terminator.
-    if ('@' != inputName[0]){
+    if ('@' == inputName[0]){
       break;
     }
-    
     // this is a potential argument
+	//printf("%s",allArgs[1].name);
     int i = 0;
     for (; allArgs[i].action; i++){
-      if (strcmp(inputName+1, allArgs[i].name)!=0){
-        continue;
+	
+      if (strcmp(inputName+1, allArgs[i].name)==0){
+        break;
       }
-      
+	 
       switch (allArgs[i].argtype){
       case ARGTYPE_BOOL:{
         int b;

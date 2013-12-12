@@ -5,10 +5,8 @@ import java.io.InputStream;
 import lexer.Lexer;
 import lexer.Token;
 import lexer.Token.Kind;
-
 import control.CommandLine;
 import control.Control;
-
 import parser.Parser;
 
 public class Tiger
