@@ -8,7 +8,7 @@ class Doit {
     public int doit() {
     	int x;
     	
-    	x = 999;
+    	x = 999 + 1;
     	
         if ((x*0)<2)
           System.out.println(1);

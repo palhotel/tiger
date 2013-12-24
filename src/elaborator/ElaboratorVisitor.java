@@ -71,68 +71,55 @@ public class ElaboratorVisitor implements ast.Visitor {
 			error("line:" + e.lineNum
 					+ " method call object type should be a class");
 		MethodType mty = this.classTable.getm(ty.id, e.id);
-		     java.util.LinkedList<ast.type.T> declaredArgTypes
-		    = new java.util.LinkedList<ast.type.T>();
-		     for (ast.dec.T dec: mty.argsType){
-		       declaredArgTypes.add(((ast.dec.Dec)dec).type);
-		     }
-		      java.util.LinkedList<ast.type.T> argsty = new java.util.LinkedList<ast.type.T>();
-		      for (ast.exp.T a : e.args) {
-		        a.accept(this);
-		        argsty.addLast(this.type);
-		      }
-		    if (declaredArgTypes.size() != argsty.size())
-		        error("");
-		     // For now, the following code only checks that
-		     // the types for actual and formal arguments should
-		     // be the same. However, in MiniJava, the actual type
-		     // of the parameter can also be a subtype (sub-class) of the 
-		     // formal type. That is, one can pass an object of type "A"
-		     // to a method expecting a type "B", whenever type "A" is
-		     // a sub-class of type "B".
-		     // Modify the following code accordingly:
-		      for (int i = 0; i < argsty.size(); i++) {
-		       if (declaredArgTypes.toString().equals(argsty.get(i).toString()))
-		          ;
-		        else
-		          error("");
-		      }
-		      this.type = mty.retType;
-		     // the following two types should be the declared types.
-		     e.at = declaredArgTypes;
-		      e.rt = this.type;
-		      return;
-/*		MethodType mty = this.classTable.getm(ty.id, e.id);
+		java.util.LinkedList<ast.type.T> declaredArgTypes = new java.util.LinkedList<ast.type.T>();
+		for (ast.dec.T dec : mty.argsType) {
+			declaredArgTypes.add(((ast.dec.Dec) dec).type);
+		}
 		java.util.LinkedList<ast.type.T> argsty = new java.util.LinkedList<ast.type.T>();
-		if (e.args != null && e.args.size() != 0) {
+		if (e.args != null)
 			for (ast.exp.T a : e.args) {
 				a.accept(this);
 				argsty.addLast(this.type);
 			}
-		}
-		if (mty.argsType.size() != argsty.size())
-			error("line:" + e.lineNum
-					+ " method call parameters' count have not matched");
+		if (declaredArgTypes.size() != argsty.size())
+			error("");
+		// For now, the following code only checks that
+		// the types for actual and formal arguments should
+		// be the same. However, in MiniJava, the actual type
+		// of the parameter can also be a subtype (sub-class) of the
+		// formal type. That is, one can pass an object of type "A"
+		// to a method expecting a type "B", whenever type "A" is
+		// a sub-class of type "B".
+		// Modify the following code accordingly:
 		for (int i = 0; i < argsty.size(); i++) {
-			ast.dec.Dec dec = (ast.dec.Dec) mty.argsType.get(i);
-			if (!dec.type.toString().equals(argsty.get(i).toString())) {
-				String classname = argsty.get(i).toString();
-				while (true) {
-					if (dec.type.toString().equals(classname))
-						break;
-					classname = this.classTable.get(argsty.get(i).toString()).extendss;
-					if (classname == null)
-						error("line:"
-								+ e.lineNum
-								+ " method call parameters' type have not matched");
-				}
-			}
+			if (declaredArgTypes.toString().equals(argsty.get(i).toString()))
+				;
+			else
+				error("");
 		}
 		this.type = mty.retType;
-		e.at = argsty;
+		// the following two types should be the declared types.
+		e.at = declaredArgTypes;
 		e.rt = this.type;
 		return;
-*/	}
+		/*
+		 * MethodType mty = this.classTable.getm(ty.id, e.id);
+		 * java.util.LinkedList<ast.type.T> argsty = new
+		 * java.util.LinkedList<ast.type.T>(); if (e.args != null &&
+		 * e.args.size() != 0) { for (ast.exp.T a : e.args) { a.accept(this);
+		 * argsty.addLast(this.type); } } if (mty.argsType.size() !=
+		 * argsty.size()) error("line:" + e.lineNum +
+		 * " method call parameters' count have not matched"); for (int i = 0; i
+		 * < argsty.size(); i++) { ast.dec.Dec dec = (ast.dec.Dec)
+		 * mty.argsType.get(i); if
+		 * (!dec.type.toString().equals(argsty.get(i).toString())) { String
+		 * classname = argsty.get(i).toString(); while (true) { if
+		 * (dec.type.toString().equals(classname)) break; classname =
+		 * this.classTable.get(argsty.get(i).toString()).extendss; if (classname
+		 * == null) error("line:" + e.lineNum +
+		 * " method call parameters' type have not matched"); } } } this.type =
+		 * mty.retType; e.at = argsty; e.rt = this.type; return;
+		 */}
 
 	@Override
 	public void visit(ast.exp.False e) {
@@ -365,7 +352,7 @@ public class ElaboratorVisitor implements ast.Visitor {
 		for (ast.stm.T s : m.stms)
 			s.accept(this);
 		m.retExp.accept(this);
-		
+
 		methodTable.printUnused();
 		return;
 	}
@@ -432,7 +419,7 @@ public class ElaboratorVisitor implements ast.Visitor {
 		if (control.Control.elabClassTable) {
 			this.classTable.dump();
 		}
-		
+
 		classTable.printUnused();
 		// ////////////////////////////////////////////////
 		// step 2: elaborate each class in turn, under the class table

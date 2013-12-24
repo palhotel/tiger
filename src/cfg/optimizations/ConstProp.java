@@ -1,5 +1,12 @@
 package cfg.optimizations;
 
+import cfg.stm.And;
+import cfg.stm.ArraySelect;
+import cfg.stm.Length;
+import cfg.stm.MoveArray;
+import cfg.stm.NewArray;
+import cfg.stm.Not;
+
 public class ConstProp implements cfg.Visitor
 {
   public cfg.program.T program;
@@ -136,4 +143,39 @@ public class ConstProp implements cfg.Visitor
     this.program = p;
   }
 
+@Override
+public void visit(And m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(Not m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(MoveArray m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(NewArray m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(ArraySelect m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(Length m) {
+	// TODO Auto-generated method stub
+	
+}
 }

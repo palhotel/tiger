@@ -36,8 +36,14 @@ public class Block extends T
     StringBuffer strb = new StringBuffer();
     strb.append(this.label.toString()+":\\n");
     // Lab5. Your code here:
-    strb.append("Your code here:\\n");
+    //strb.append("Your code here:\\n");
     
+    cfg.VisualVisitor vv = new cfg.VisualVisitor();
+    for(cfg.stm.T t : stms)
+    {
+    	t.accept(vv);
+    }
+    strb.append(vv.strb);
     
     return strb.toString();
   }

@@ -33,7 +33,9 @@ public class MethodTable {
 
 	// return null for non-existing keys
 	public ast.type.T get(String id) {
-		if (unused.containsKey(id)) {
+		if(unused == null)
+			return null;
+		if ( unused.containsKey(id)) {
 			unused.remove(id);
 		}
 		return this.table.get(id);

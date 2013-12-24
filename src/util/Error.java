@@ -6,4 +6,9 @@ public class Error
   {
     throw new java.lang.Error("Compiler bug");
   }
+  
+  public static void bug(String msg)
+  {
+    throw new java.lang.Error("Compiler bug: " + msg);
+  }
 }

@@ -73,10 +73,11 @@ public class Control
     return;
   }
   
+  //Lab5 excise 1 -skip all ЬјЙ§Ыљга
   public static boolean skipPass (String name)
   {
     for (String s: skippedPasses){
-      if (s.equals(name))
+      if (s.equals(name)||s.equals("all"))
         return true;
     }
     return false;

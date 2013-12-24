@@ -1,5 +1,12 @@
 package cfg.optimizations;
 
+import cfg.stm.And;
+import cfg.stm.ArraySelect;
+import cfg.stm.Length;
+import cfg.stm.MoveArray;
+import cfg.stm.NewArray;
+import cfg.stm.Not;
+
 public class LivenessVisitor implements cfg.Visitor
 {
   // gen, kill for one statement
@@ -374,5 +381,42 @@ public class LivenessVisitor implements cfg.Visitor
     }
     return;
   }
+
+@Override
+public void visit(And m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(Not m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(MoveArray m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(NewArray m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(ArraySelect m) {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void visit(Length m) {
+	// TODO Auto-generated method stub
+	
+}
+
 
 }

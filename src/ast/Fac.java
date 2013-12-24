@@ -16,11 +16,14 @@ public class Fac {
 	 * = num * (this.ComputeFac(num-1)); return num_aux; } }
 	 */
 
-	// // main class: "Factorial"
+	 // main class: "Factorial"
 	static ast.mainClass.MainClass factorial = new ast.mainClass.MainClass(
 			"Factorial", "a", new ast.stm.Print(new ast.exp.Call(
 					new ast.exp.NewObject("Fac",0), "ComputeFac",
 					new util.Flist<ast.exp.T>().addAll(new ast.exp.Num(10,0)),0),0));
+/*	static ast.mainClass.MainClass factorial = new ast.mainClass.MainClass(
+			"Factorial", "a", new ast.stm.Print(new ast.exp.Num(10,0),0));
+*/
 
 	// // class "Fac"
 	static ast.classs.Class fac = new ast.classs.Class(

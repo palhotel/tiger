@@ -19,7 +19,7 @@ public interface Visitor
 
   // transfer
   public void visit(cfg.transfer.If t);
-
+  
   public void visit(cfg.transfer.Goto t);
 
   public void visit(cfg.transfer.Return t);
@@ -27,19 +27,31 @@ public interface Visitor
   // statement:
   public void visit(cfg.stm.Add m);
 
-  public void visit(cfg.stm.InvokeVirtual m);
-
-  public void visit(cfg.stm.Lt m);
-
-  public void visit(cfg.stm.Move m);
-  
-  public void visit(cfg.stm.NewObject m);
-  
-  public void visit(cfg.stm.Print m);
-
   public void visit(cfg.stm.Sub m);
 
   public void visit(cfg.stm.Times m);
+  
+  public void visit(cfg.stm.InvokeVirtual m);
+
+  public void visit(cfg.stm.Lt m);
+  
+  public void visit(cfg.stm.And m);
+  
+  public void visit(cfg.stm.Not m);
+
+  public void visit(cfg.stm.Move m);
+  
+  public void visit(cfg.stm.MoveArray m);
+  
+  public void visit(cfg.stm.NewArray m);
+  
+  public void visit(cfg.stm.ArraySelect m);
+  
+  public void visit(cfg.stm.NewObject m);
+  
+  public void visit(cfg.stm.Length m);
+  
+  public void visit(cfg.stm.Print m);
 
   // block
   public void visit(cfg.block.Block b);

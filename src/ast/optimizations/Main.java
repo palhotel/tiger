@@ -15,16 +15,6 @@ public class Main
       ast = dceVisitor.program;
     }
     
-    DeadCode dcodeVisitor = new DeadCode();
-    control.CompilerPass deadCodePass = new control.CompilerPass(
-        "Dead code elimination", ast, dcodeVisitor);
-    if (control.Control.skipPass("ast.DeadCode")){
-    }else{
-      deadCodePass.doit();
-      ast = dcodeVisitor.program;
-    }
-    
-
     AlgSimp algVisitor = new AlgSimp();
     control.CompilerPass algPass = new control.CompilerPass(
         "Algebraic simplification", ast, algVisitor);
@@ -33,6 +23,16 @@ public class Main
       algPass.doit();
       ast = algVisitor.program;
     }
+    
+    DeadCode dcodeVisitor = new DeadCode();
+    control.CompilerPass deadCodePass = new control.CompilerPass(
+        "Dead code elimination", ast, dcodeVisitor);
+    if (control.Control.skipPass("ast.DeadCode")){
+    }else{
+      deadCodePass.doit();
+      ast = dcodeVisitor.program;
+    }
+
 
     ConstFold cfVisitor = new ConstFold();
     control.CompilerPass constFoldPass = new control.CompilerPass(
@@ -43,6 +43,15 @@ public class Main
       ast = cfVisitor.program;
     }    
 
+    dceVisitor = new DeadClass();
+    deadClassPass = new control.CompilerPass(
+        "Dead class elimination", ast, dceVisitor);
+    if (control.Control.skipPass("ast.DeadClass")){
+    }else{
+      deadClassPass.doit();
+      ast = dceVisitor.program;
+    }
+    
     program = ast;
     
     return;
