@@ -4,7 +4,6 @@ import cfg.Visitor;
 
 public class Move extends T
 {
-  public String dst;
   // type of the destination variable
   public cfg.type.T ty;
   public cfg.operand.T src;

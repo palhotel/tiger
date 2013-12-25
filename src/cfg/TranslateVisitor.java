@@ -99,7 +99,7 @@ public class TranslateVisitor implements codegen.C.Visitor {
 		this.operand = new cfg.operand.Var(dst);
 		return;
 	}
-	
+
 	@Override
 	public void visit(codegen.C.exp.Times e) {
 		String dst = genVar();
@@ -213,14 +213,11 @@ public class TranslateVisitor implements codegen.C.Visitor {
 		return;
 	}
 
-
-
 	@Override
 	public void visit(codegen.C.exp.This e) {
 		this.operand = new cfg.operand.Var("this");
 		return;
 	}
-
 
 	// statements
 	@Override
@@ -241,7 +238,7 @@ public class TranslateVisitor implements codegen.C.Visitor {
 
 	@Override
 	public void visit(codegen.C.stm.Block s) {
-		for(codegen.C.stm.T stm: s.stms)
+		for (codegen.C.stm.T stm : s.stms)
 			stm.accept(this);
 	}
 

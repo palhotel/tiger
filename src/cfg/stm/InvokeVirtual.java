@@ -4,7 +4,6 @@ import cfg.Visitor;
 
 public class InvokeVirtual extends T
 {
-  public String dst;
   public String obj;
   public String f;
   // type of the destination variable

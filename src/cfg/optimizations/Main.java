@@ -1,87 +1,101 @@
 package cfg.optimizations;
 
-public class Main
-{
-  public cfg.program.T program;
+public class Main {
+	public cfg.program.T program;
 
-  public void accept(cfg.program.T cfg)
-  {
-    // liveness analysis
-    LivenessVisitor liveness = new LivenessVisitor();
-    control.CompilerPass livenessPass = new control.CompilerPass(
-        "Liveness analysis", cfg, liveness);
-    if (control.Control.skipPass("cfg.Linvess")) {
-    } else {
-      livenessPass.doit();
-      // Export necessary data structures from the
-      // liveness analysis.
-      // Your code here:
-    }
+	public void accept(cfg.program.T cfg) {
+		java.util.HashMap<cfg.stm.T, java.util.HashSet<String>> stmLiveIn = new java.util.HashMap<cfg.stm.T, java.util.HashSet<String>>();
+		java.util.HashMap<cfg.stm.T, java.util.HashSet<String>> stmLiveOut = new java.util.HashMap<cfg.stm.T, java.util.HashSet<String>>();
 
-    // dead-code elimination
-    DeadCode deadCode = new DeadCode();
-    control.CompilerPass deadCodePass = new control.CompilerPass(
-        "Dead-code elimination", cfg, deadCode);
-    if (control.Control.skipPass("cfg.deadCode")) {
-    } else {
-      deadCodePass.doit();
-      cfg = deadCode.program;
-    }
+		// liveIn, liveOut for transfer
+		java.util.HashMap<cfg.transfer.T, java.util.HashSet<String>> transferLiveIn = new java.util.HashMap<cfg.transfer.T, java.util.HashSet<String>>();
+		java.util.HashMap<cfg.transfer.T, java.util.HashSet<String>> transferLiveOut = new java.util.HashMap<cfg.transfer.T, java.util.HashSet<String>>();
 
-    // reaching definition
-    ReachingDefinition reachingDef = new ReachingDefinition();
-    control.CompilerPass reachingDefPass = new control.CompilerPass(
-        "Reaching definition", cfg, reachingDef);
-    if (control.Control.skipPass("cfg.reaching")) {
-    } else {
-      reachingDefPass.doit();
-      // Export necessary data structures
-      // Your code here:
-    }
+		// liveness analysis
+		LivenessVisitor liveness = new LivenessVisitor();
+		control.CompilerPass livenessPass = new control.CompilerPass(
+				"Liveness analysis", cfg, liveness);
+		if (control.Control.skipPass("cfg.Linvess")) {
+		} else {
+			livenessPass.doit();
+			// Export necessary data structures from the
+			// liveness analysis.
+			// Your code here:
+			stmLiveIn = liveness.stmLiveIn;
+			stmLiveOut = liveness.stmLiveOut;
+			transferLiveIn = liveness.transferLiveIn;
+			transferLiveOut = liveness.transferLiveOut;
+		}
 
-    // constant propagation
-    ConstProp constProp = new ConstProp();
-    control.CompilerPass constPropPass = new control.CompilerPass(
-        "Constant propagation", cfg, constProp);
-    if (control.Control.skipPass("cfg.constProp")) {
-    } else {
-      constPropPass.doit();
-      cfg = constProp.program;
-    }
+		// dead-code elimination
+		DeadCode deadCode = new DeadCode();
+		control.CompilerPass deadCodePass = new control.CompilerPass(
+				"Dead-code elimination", cfg, deadCode);
+		if (control.Control.skipPass("cfg.deadCode")) {
+		} else {
+			deadCode.stmLiveIn = stmLiveIn;
+			deadCode.stmLiveOut = stmLiveOut;
+			deadCode.transferLiveIn = transferLiveIn;
+			deadCode.transferLiveOut = transferLiveOut;
 
-    // copy propagation
-    CopyProp copyProp = new CopyProp();
-    control.CompilerPass copyPropPass = new control.CompilerPass(
-        "Copy propagation", cfg, copyProp);
-    if (control.Control.skipPass("cfg.copyProp")) {
-    } else {
-      copyPropPass.doit();
-      cfg = copyProp.program;
-    }
+			deadCodePass.doit();
+			cfg = deadCode.program;
+		}
 
-    // available expression
-    AvailExp availExp = new AvailExp();
-    control.CompilerPass availExpPass = new control.CompilerPass(
-        "Available expression", cfg, availExp);
-    if (control.Control.skipPass("cfg.availExp")) {
-    } else {
-      availExpPass.doit();
-      // Export necessary data structures
-      // Your code here:
-    }
+		// reaching definition
+		ReachingDefinition reachingDef = new ReachingDefinition();
+		control.CompilerPass reachingDefPass = new control.CompilerPass(
+				"Reaching definition", cfg, reachingDef);
+		if (control.Control.skipPass("cfg.reaching")) {
+		} else {
+			reachingDefPass.doit();
+			// Export necessary data structures
+			// Your code here:
+		}
 
-    // CSE
-    Cse cse = new Cse();
-    control.CompilerPass csePass = new control.CompilerPass(
-        "Common subexpression elimination", cfg, cse);
-    if (control.Control.skipPass("cfg.cse")) {
-    } else {
-      csePass.doit();
-      cfg = cse.program;
-    }
+		// constant propagation
+		ConstProp constProp = new ConstProp();
+		control.CompilerPass constPropPass = new control.CompilerPass(
+				"Constant propagation", cfg, constProp);
+		if (control.Control.skipPass("cfg.constProp")) {
+		} else {
+			constPropPass.doit();
+			cfg = constProp.program;
+		}
 
-    program = cfg;
+		// copy propagation
+		CopyProp copyProp = new CopyProp();
+		control.CompilerPass copyPropPass = new control.CompilerPass(
+				"Copy propagation", cfg, copyProp);
+		if (control.Control.skipPass("cfg.copyProp")) {
+		} else {
+			copyPropPass.doit();
+			cfg = copyProp.program;
+		}
 
-    return;
-  }
+		// available expression
+		AvailExp availExp = new AvailExp();
+		control.CompilerPass availExpPass = new control.CompilerPass(
+				"Available expression", cfg, availExp);
+		if (control.Control.skipPass("cfg.availExp")) {
+		} else {
+			availExpPass.doit();
+			// Export necessary data structures
+			// Your code here:
+		}
+
+		// CSE
+		Cse cse = new Cse();
+		control.CompilerPass csePass = new control.CompilerPass(
+				"Common subexpression elimination", cfg, cse);
+		if (control.Control.skipPass("cfg.cse")) {
+		} else {
+			csePass.doit();
+			cfg = cse.program;
+		}
+
+		program = cfg;
+
+		return;
+	}
 }

@@ -235,6 +235,8 @@ public class Tiger {
 				genDotPass.doit();
 			}
 			
+			
+			
 			break;
 		case Dalvik:
 			codegen.dalvik.TranslateVisitor transDalvik = new codegen.dalvik.TranslateVisitor();

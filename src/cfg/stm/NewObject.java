@@ -4,7 +4,6 @@ import cfg.Visitor;
 
 public class NewObject extends T
 {
-  public String dst;
   // type of the destination variable
   public String c;
   

@@ -61,7 +61,7 @@ public class VisualVisitor implements Visitor {
 		s.left.accept(this);
 		emit(" < ");
 		s.right.accept(this);
-		emit(";");
+		emit(";\n");
 		return;
 	}
 
